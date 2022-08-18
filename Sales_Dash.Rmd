@@ -1,0 +1,65 @@
+title: "KPI Dashboard for Sales Dept"
+output: 
+  flexdashboard::flex_dashboard:
+     orientation: rows
+    
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(ggplot2)
+library(formattable)
+
+kpi <- read.csv('KPI_Scenario.csv')
+```
+
+```{css, echo=FALSE}
+.fluid-row {
+  font-size: 5.9vw;
+}
+```
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### 
+
+
+```{r fig.width=30, height=30}
+chart_data <- read.csv('C:/Users/Jesse/OneDrive/Desktop/R/Rmarkdown/sales_control.csv')
+
+x <- chart_data[,1:2, drop = FALSE]
+
+ggplot(x, aes(Date, Widgets_one_sold, group=1)) +
+  geom_line(color="black", size=3.5, alpha=.25)+
+  scale_color_brewer(palette="Dark2") + 
+  theme(axis.text.x=element_text(angle=90,hjust=1)) +
+  geom_label(aes(label = Widgets_one_sold))
+```
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### 
+
+```{r}
+custom_color_tile <- function (x , x_Target = 75) {
+  formatter("span",
+            style = x ~ style(display = "block", 
+            padding = "0 4px", 
+            `color` = "white", 
+            `border-radius` = "4px", 
+            `background-color` = ifelse(x >= x_Target, "green", "red")))
+}
+
+formattable(kpi, 
+            align = c("l",rep("r", NCOL(kpi) - 1)),
+            list(`KPI` = formatter("span", style = ~ style(color = "grey", font.weight = "bold")), 
+            area(col = 2, row = 1) ~ custom_color_tile(x_Target = 75),
+            area(col = 2, row = 2) ~ custom_color_tile(x_Target= 175000),
+            area(col = 2, row = 3) ~ custom_color_tile(x_Target= .23),
+            `Target.Achieved` = formatter("span", 
+            x ~ icontext(ifelse(x > 0, "ok", "remove"), 
+                         ifelse(x > 0, "Yes", "No")), 
+                         style = x ~ style(color = ifelse(x < 0, "red", "green")))))
+```
